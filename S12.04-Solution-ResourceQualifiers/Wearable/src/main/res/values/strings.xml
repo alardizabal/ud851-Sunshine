@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Wearable</string>
+
+    <string name="watch_face_name">Sunshine</string>
+</resources>
