@@ -384,13 +384,13 @@ public class MainActivity extends AppCompatActivity implements
         putDataMapRequest.getDataMap().putString("weatherDate", mForecastAdapter.dateString);
         putDataMapRequest.getDataMap().putString("highTemp", mForecastAdapter.highString);
         putDataMapRequest.getDataMap().putString("lowTemp", mForecastAdapter.lowString);
-        putDataMapRequest.getDataMap().putInt("weatherImageId", mForecastAdapter.watchWeatherImageId);
+        putDataMapRequest.getDataMap().putInt("weatherId", mForecastAdapter.weatherId);
 
         System.out.println("Weather Data:");
         System.out.println(putDataMapRequest.getDataMap().getString("weatherDate"));
         System.out.println(putDataMapRequest.getDataMap().getString("highTemp"));
         System.out.println(putDataMapRequest.getDataMap().getString("lowTemp"));
-        System.out.println(putDataMapRequest.getDataMap().getInt("weatherImageId"));
+        System.out.println(putDataMapRequest.getDataMap().getInt("weatherId"));
 
         PutDataRequest putDataRequest = putDataMapRequest.asPutDataRequest();
 
@@ -401,7 +401,7 @@ public class MainActivity extends AppCompatActivity implements
                         if (!result.getStatus().isSuccess()) {
                             System.out.println("Failure with code: " + result.getStatus().getStatusCode());
                         } else {
-                            System.out.println("Success" + result.getDataItem().getUri());
+                            System.out.println("Success: " + result.getDataItem().getUri());
                         }
                     }
                 });

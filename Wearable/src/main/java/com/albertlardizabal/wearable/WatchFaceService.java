@@ -4,10 +4,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -64,12 +67,9 @@ public class WatchFaceService extends CanvasWatchFaceService {
 
     public static GoogleApiClient googleApiClient;
 
-    private float xOffset;
-    private float yOffset;
-
-    private String highTemp = "0";
-    private String lowTemp = "0";
-    private int weatherImageId;
+    private String highTemp = "25°";
+    private String lowTemp = "13°";
+    private int weatherId = 211;
 
     Paint backgroundPaint;
     Paint hourPaint;
@@ -150,8 +150,6 @@ public class WatchFaceService extends CanvasWatchFaceService {
                     .build());
 
             Resources resources = WatchFaceService.this.getResources();
-            xOffset = resources.getDimension(R.dimen.digital_x_offset);
-            yOffset = resources.getDimension(R.dimen.digital_y_offset);
 
             googleApiClient = new GoogleApiClient.Builder(WatchFaceService.this)
                     .addConnectionCallbacks(this)
@@ -221,24 +219,25 @@ public class WatchFaceService extends CanvasWatchFaceService {
 
             float x = (bounds.width() / 2) - (timeStringLength / 2);
 
-            canvas.drawText(hourString, x, yOffset, hourPaint);
+            canvas.drawText(hourString, x, bounds.height() / 3, hourPaint);
             x += hourPaint.measureText(hourString);
 
-            canvas.drawText(COLON_STRING, x, yOffset, colonPaint);
+            canvas.drawText(COLON_STRING, x, bounds.height() / 3, colonPaint);
 
             x += colonWidth;
 
             // Draw minutes
-            canvas.drawText(minuteString, x, yOffset, minutePaint);
-            x += minutePaint.measureText(minuteString);
-
-            x = xOffset;
+            canvas.drawText(minuteString, x, bounds.height() / 3, minutePaint);
 
             float highStringLength = highPaint.measureText(highTemp);
-            canvas.drawText(highTemp, (bounds.width() / 4) - (highStringLength / 2), yOffset + 100, highPaint);
+            canvas.drawText(highTemp, (bounds.width() / 4) - (highStringLength / 2), bounds.height() / (float)1.75, highPaint);
 
             float lowStringLength = lowPaint.measureText(lowTemp);
-            canvas.drawText(lowTemp, (bounds.width() * 3/4) - (lowStringLength / 2), yOffset + 100, lowPaint);
+            canvas.drawText(lowTemp, (bounds.width() * 3/4) - (lowStringLength / 2), bounds.height() / (float)1.75, lowPaint);
+
+            Drawable drawable = getResources().getDrawable(WeatherUtils.getSmallArtResourceIdForWeatherCondition(weatherId));
+            Bitmap icon = ((BitmapDrawable) drawable).getBitmap();
+            canvas.drawBitmap(icon, bounds.width() / 2 - (icon.getWidth() / 2), bounds.height() * 2/3, null);
         }
 
         @Override
@@ -307,7 +306,7 @@ public class WatchFaceService extends CanvasWatchFaceService {
                     DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
                     highTemp = dataMap.getString("highTemp");
                     lowTemp = dataMap.getString("lowTemp");
-                    weatherImageId = dataMap.getInt("weatherImageId");
+                    weatherId = dataMap.getInt("weatherId");
                     invalidate();
                 }
             }

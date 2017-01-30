@@ -38,7 +38,7 @@ class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ForecastAdapt
     private static final int VIEW_TYPE_FUTURE_DAY = 1;
 
     String dateString;
-    int watchWeatherImageId;
+    int weatherId;
     String highString;
     String lowString;
 
@@ -149,7 +149,7 @@ class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ForecastAdapt
             case VIEW_TYPE_TODAY:
                 weatherImageId = SunshineWeatherUtils
                         .getLargeArtResourceIdForWeatherCondition(weatherId);
-                watchWeatherImageId = weatherImageId;
+                this.weatherId = weatherId;
                 break;
 
             case VIEW_TYPE_FUTURE_DAY:
