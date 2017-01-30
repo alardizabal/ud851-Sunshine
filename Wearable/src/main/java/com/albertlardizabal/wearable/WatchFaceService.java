@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
@@ -19,13 +18,17 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.WindowInsets;
 
+import com.example.android.sunshine.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.DataApi;
+import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.DataItem;
+import com.google.android.gms.wearable.DataMap;
+import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.Wearable;
 
-import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -61,29 +64,21 @@ public class WatchFaceService extends CanvasWatchFaceService {
 
     public static GoogleApiClient googleApiClient;
 
-    private Time displayTime;
-
-    private Paint backgroundColorPaint;
-    private Paint textColorPaint;
-
-    private boolean hasTimeZoneReceiverBeenRegistered = false;
-    private boolean isInMuteMode;
-    private boolean isLowBitAmbient;
-
     private float xOffset;
     private float yOffset;
 
-    private int backgroundColor = Color.parseColor( "black" );
-    private int textColor = Color.parseColor( "red" );
-
-    private String highTemp;
-    private String lowTemp;
+    private String highTemp = "0";
+    private String lowTemp = "0";
+    private int weatherImageId;
 
     Paint backgroundPaint;
     Paint hourPaint;
     Paint minutePaint;
     Paint colonPaint;
     float colonWidth;
+
+    Paint highPaint;
+    Paint lowPaint;
 
     Calendar calendar;
     Date date;
@@ -164,12 +159,17 @@ public class WatchFaceService extends CanvasWatchFaceService {
                     .addApi(Wearable.API)
                     .build();
 
+            googleApiClient.connect();
+
             // Colors
             backgroundPaint = new Paint();
-            backgroundPaint.setColor(getResources().getColor(R.color.blue));
-            hourPaint = createTextPaint(getResources().getColor(R.color.white), BOLD_TYPEFACE);
-            minutePaint = createTextPaint(getResources().getColor(R.color.white), BOLD_TYPEFACE);
-            colonPaint = createTextPaint(getResources().getColor(R.color.white));
+            backgroundPaint.setColor(resources.getColor(R.color.blue));
+            hourPaint = createTextPaint(resources.getColor(R.color.white), BOLD_TYPEFACE);
+            minutePaint = createTextPaint(resources.getColor(R.color.white), BOLD_TYPEFACE);
+            colonPaint = createTextPaint(resources.getColor(R.color.white));
+
+            highPaint = createTextPaint(resources.getColor(R.color.white), BOLD_TYPEFACE);
+            lowPaint = createTextPaint(resources.getColor(R.color.white));
 
             // Initialize member variables
             calendar = Calendar.getInstance();
@@ -194,6 +194,9 @@ public class WatchFaceService extends CanvasWatchFaceService {
             minutePaint.setTextSize(textSize);
             colonPaint.setTextSize(textSize);
 
+            highPaint.setTextSize(textSize);
+            lowPaint.setTextSize(textSize);
+
             colonWidth = colonPaint.measureText(COLON_STRING);
         }
 
@@ -209,12 +212,16 @@ public class WatchFaceService extends CanvasWatchFaceService {
             date.setTime(now);
 
             // Draw the hours.
-            float x = xOffset;
             String hourString;
             int hour = calendar.get(Calendar.HOUR_OF_DAY);
             hourString = String.valueOf(hour);
-            canvas.drawText(hourString, x, yOffset, hourPaint);
+            String minuteString = formatTwoDigitNumber(calendar.get(Calendar.MINUTE));
 
+            float timeStringLength = hourPaint.measureText(hourString) + colonWidth + minutePaint.measureText(minuteString);
+
+            float x = (bounds.width() / 2) - (timeStringLength / 2);
+
+            canvas.drawText(hourString, x, yOffset, hourPaint);
             x += hourPaint.measureText(hourString);
 
             canvas.drawText(COLON_STRING, x, yOffset, colonPaint);
@@ -222,9 +229,16 @@ public class WatchFaceService extends CanvasWatchFaceService {
             x += colonWidth;
 
             // Draw minutes
-            String minuteString = formatTwoDigitNumber(calendar.get(Calendar.MINUTE));
             canvas.drawText(minuteString, x, yOffset, minutePaint);
             x += minutePaint.measureText(minuteString);
+
+            x = xOffset;
+
+            float highStringLength = highPaint.measureText(highTemp);
+            canvas.drawText(highTemp, (bounds.width() / 4) - (highStringLength / 2), yOffset + 100, highPaint);
+
+            float lowStringLength = lowPaint.measureText(lowTemp);
+            canvas.drawText(lowTemp, (bounds.width() * 3/4) - (lowStringLength / 2), yOffset + 100, lowPaint);
         }
 
         @Override
@@ -243,6 +257,7 @@ public class WatchFaceService extends CanvasWatchFaceService {
         public void onTimeTick() {
             super.onTimeTick();
             /* the time changed */
+            invalidate();
         }
 
         @Override
@@ -255,27 +270,18 @@ public class WatchFaceService extends CanvasWatchFaceService {
         public void onVisibilityChanged(boolean visible) {
             super.onVisibilityChanged(visible);
             /* the watch face became visible or invisible */
+
+            if (visible) {
+                googleApiClient.connect();
+            } else {
+                googleApiClient.disconnect();
+            }
         }
 
         @Override // GoogleApiClient.ConnectionCallbacks
         public void onConnected(Bundle connectionHint) {
-            if (Log.isLoggable(TAG, Log.DEBUG)) {
-                Log.d(TAG, "onConnected al al al: " + connectionHint);
-            }
-            getWeatherData();
-        }
-
-        public void getWeatherData() {
-//            PutDataMapRequest putDataMapRequest = PutDataMapRequest.create("/weather");
-//            putDataMapRequest.getDataMap().putString("weatherDate", mForecastAdapter.dateString);
-//            putDataMapRequest.getDataMap().putString("highTemp", mForecastAdapter.highString);
-//            putDataMapRequest.getDataMap().putString("lowTemp", mForecastAdapter.lowString);
-//            putDataMapRequest.getDataMap().putInt("weatherImageId", mForecastAdapter.watchWeatherImageId);
-
-//            System.out.println(putDataMapRequest.getDataMap().getString("weatherDate"));
-//            System.out.println(putDataMapRequest.getDataMap().getString("highTemp"));
-//            System.out.println(putDataMapRequest.getDataMap().getString("lowTemp"));
-//            System.out.println(putDataMapRequest.getDataMap().getInt("weatherImageId"));
+            System.out.println("onConnectedWear");
+            Wearable.DataApi.addListener(googleApiClient, this);
         }
 
         @Override // GoogleApiClient.ConnectionCallbacks
@@ -288,14 +294,22 @@ public class WatchFaceService extends CanvasWatchFaceService {
         @Override // GoogleApiClient.OnConnectionFailedListener
         public void onConnectionFailed(ConnectionResult result) {
             if (Log.isLoggable(TAG, Log.DEBUG)) {
-                Log.d(TAG, "onConnectionFailed: " + result);
+                Log.d(TAG, "onConnectionFailedWear: " + result);
             }
         }
 
         @Override
         public void onDataChanged(DataEventBuffer dataEventBuffer) {
-            if (Log.isLoggable(TAG, Log.DEBUG)) {
-                Log.d(TAG, "onDataChanged");
+            System.out.println("onDataChangedWear");
+            for (DataEvent event : dataEventBuffer) {
+                DataItem item = event.getDataItem();
+                if (item.getUri().getPath().compareTo("/weather") == 0) {
+                    DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
+                    highTemp = dataMap.getString("highTemp");
+                    lowTemp = dataMap.getString("lowTemp");
+                    weatherImageId = dataMap.getInt("weatherImageId");
+                    invalidate();
+                }
             }
         }
 

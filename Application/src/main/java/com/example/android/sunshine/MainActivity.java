@@ -37,9 +37,11 @@ import com.example.android.sunshine.data.WeatherContract;
 import com.example.android.sunshine.sync.SunshineSyncUtils;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 
 
@@ -384,10 +386,25 @@ public class MainActivity extends AppCompatActivity implements
         putDataMapRequest.getDataMap().putString("lowTemp", mForecastAdapter.lowString);
         putDataMapRequest.getDataMap().putInt("weatherImageId", mForecastAdapter.watchWeatherImageId);
 
+        System.out.println("Weather Data:");
         System.out.println(putDataMapRequest.getDataMap().getString("weatherDate"));
         System.out.println(putDataMapRequest.getDataMap().getString("highTemp"));
         System.out.println(putDataMapRequest.getDataMap().getString("lowTemp"));
         System.out.println(putDataMapRequest.getDataMap().getInt("weatherImageId"));
+
+        PutDataRequest putDataRequest = putDataMapRequest.asPutDataRequest();
+
+        Wearable.DataApi.putDataItem(MainActivity.googleApiClient, putDataRequest)
+                .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
+                    @Override
+                    public void onResult(DataApi.DataItemResult result) {
+                        if (!result.getStatus().isSuccess()) {
+                            System.out.println("Failure with code: " + result.getStatus().getStatusCode());
+                        } else {
+                            System.out.println("Success" + result.getDataItem().getUri());
+                        }
+                    }
+                });
     }
 
     @Override // GoogleApiClient.ConnectionCallbacks

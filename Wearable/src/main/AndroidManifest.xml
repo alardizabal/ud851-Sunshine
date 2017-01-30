@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.albertlardizabal.wearable">
+    package="com.example.android.sunshine">
 
     <uses-feature android:name="android.hardware.type.watch" />
 
@@ -22,7 +22,7 @@
             android:required="false"/>
 
         <service
-            android:name=".WatchFaceService"
+            android:name="com.albertlardizabal.wearable.WatchFaceService"
             android:label="@string/watch_face_name"
             android:permission="android.permission.BIND_WALLPAPER" >
 
