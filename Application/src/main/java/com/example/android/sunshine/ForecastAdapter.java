@@ -169,8 +169,11 @@ class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ForecastAdapt
          /* Read date from the cursor */
         long dateInMillis = mCursor.getLong(MainActivity.INDEX_WEATHER_DATE);
          /* Get human readable string using our utility method */
-        dateString = SunshineDateUtils.getFriendlyDateString(mContext, dateInMillis, false);
+        String dateString = SunshineDateUtils.getFriendlyDateString(mContext, dateInMillis, false);
 
+        if (viewType == VIEW_TYPE_TODAY) {
+            this.dateString = dateString;
+        }
          /* Display friendly date string */
         forecastAdapterViewHolder.dateView.setText(dateString);
 
@@ -195,7 +198,12 @@ class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ForecastAdapt
           * the temperature. This method will also append either °C or °F to the temperature
           * String.
           */
-        highString = SunshineWeatherUtils.formatTemperature(mContext, highInCelsius);
+        String highString = SunshineWeatherUtils.formatTemperature(mContext, highInCelsius);
+
+        if (viewType == VIEW_TYPE_TODAY) {
+            this.highString = highString;
+        }
+
          /* Create the accessibility (a11y) String from the weather description */
         String highA11y = mContext.getString(R.string.a11y_high_temp, highString);
 
@@ -213,7 +221,11 @@ class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ForecastAdapt
           * the temperature. This method will also append either °C or °F to the temperature
           * String.
           */
-        lowString = SunshineWeatherUtils.formatTemperature(mContext, lowInCelsius);
+        String lowString = SunshineWeatherUtils.formatTemperature(mContext, lowInCelsius);
+
+        if (viewType == VIEW_TYPE_TODAY) {
+            this.lowString = lowString;
+        }
         String lowA11y = mContext.getString(R.string.a11y_low_temp, lowString);
 
          /* Set the text and content description (for accessibility purposes) */

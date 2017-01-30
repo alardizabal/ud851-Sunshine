@@ -14,7 +14,6 @@ public class WeatherUtils {
          * Based on weather code data for Open Weather Map.
          */
         if (weatherId >= 200 && weatherId <= 232) {
-            System.out.println("WeatherIcon: Storm");
             return R.drawable.ic_storm;
         } else if (weatherId >= 300 && weatherId <= 321) {
             return R.drawable.ic_light_rain;
