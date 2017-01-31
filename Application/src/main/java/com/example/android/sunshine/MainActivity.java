@@ -380,17 +380,25 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public void sendWeatherData() {
-        PutDataMapRequest putDataMapRequest = PutDataMapRequest.create("/weather");
-        putDataMapRequest.getDataMap().putString("weatherDate", mForecastAdapter.dateString);
-        putDataMapRequest.getDataMap().putString("highTemp", mForecastAdapter.highString);
-        putDataMapRequest.getDataMap().putString("lowTemp", mForecastAdapter.lowString);
-        putDataMapRequest.getDataMap().putInt("weatherId", mForecastAdapter.weatherId);
-
         System.out.println("Weather Data:");
-        System.out.println(putDataMapRequest.getDataMap().getString("weatherDate"));
-        System.out.println(putDataMapRequest.getDataMap().getString("highTemp"));
-        System.out.println(putDataMapRequest.getDataMap().getString("lowTemp"));
-        System.out.println(putDataMapRequest.getDataMap().getInt("weatherId"));
+        PutDataMapRequest putDataMapRequest = PutDataMapRequest.create("/weather");
+        if (mForecastAdapter.dateString != null) {
+            putDataMapRequest.getDataMap().putString("weatherDate", mForecastAdapter.dateString);
+            System.out.println(putDataMapRequest.getDataMap().getString("weatherDate"));
+        }
+        if (mForecastAdapter.highString != null) {
+            putDataMapRequest.getDataMap().putString("highTemp", mForecastAdapter.highString);
+            System.out.println(putDataMapRequest.getDataMap().getString("highTemp"));
+        }
+        if (mForecastAdapter.lowString != null) {
+            putDataMapRequest.getDataMap().putString("lowTemp", mForecastAdapter.lowString);
+            System.out.println(putDataMapRequest.getDataMap().getString("lowTemp"));
+        }
+        if (mForecastAdapter.weatherId != 0) {
+            putDataMapRequest.getDataMap().putInt("weatherId", mForecastAdapter.weatherId);
+            System.out.println(putDataMapRequest.getDataMap().getInt("weatherId"));
+        }
+        putDataMapRequest.setUrgent();
 
         PutDataRequest putDataRequest = putDataMapRequest.asPutDataRequest();
 

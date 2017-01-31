@@ -40,7 +40,6 @@ dependencies {
     androidTestCompile 'com.android.support.test:rules:0.5'
 
     compile 'com.google.android.support:wearable:1.4.0'
-    compile 'com.google.android.gms:play-services:10.0.1'
     compile 'com.google.android.gms:play-services-wearable:10.0.1'
 
     wearApp project(':Wearable')

@@ -229,11 +229,15 @@ public class WatchFaceService extends CanvasWatchFaceService {
             // Draw minutes
             canvas.drawText(minuteString, x, bounds.height() / 3, minutePaint);
 
-            float highStringLength = highPaint.measureText(highTemp);
-            canvas.drawText(highTemp, (bounds.width() / 4) - (highStringLength / 2), bounds.height() / (float)1.75, highPaint);
+            if (highTemp != null) {
+                float highStringLength = highPaint.measureText(highTemp);
+                canvas.drawText(highTemp, (bounds.width() / 4) - (highStringLength / 2), bounds.height() / (float) 1.75, highPaint);
+            }
 
-            float lowStringLength = lowPaint.measureText(lowTemp);
-            canvas.drawText(lowTemp, (bounds.width() * 3/4) - (lowStringLength / 2), bounds.height() / (float)1.75, lowPaint);
+            if (lowTemp != null) {
+                float lowStringLength = lowPaint.measureText(lowTemp);
+                canvas.drawText(lowTemp, (bounds.width() * 3 / 4) - (lowStringLength / 2), bounds.height() / (float) 1.75, lowPaint);
+            }
 
             Drawable drawable = getResources().getDrawable(WeatherUtils.getSmallArtResourceIdForWeatherCondition(weatherId));
             Bitmap icon = ((BitmapDrawable) drawable).getBitmap();
@@ -304,10 +308,21 @@ public class WatchFaceService extends CanvasWatchFaceService {
                 DataItem item = event.getDataItem();
                 if (item.getUri().getPath().compareTo("/weather") == 0) {
                     DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
-                    highTemp = dataMap.getString("highTemp");
-                    lowTemp = dataMap.getString("lowTemp");
-                    weatherId = dataMap.getInt("weatherId");
+                    if (dataMap.getString("highTemp") != null) {
+                        highTemp = dataMap.getString("highTemp");
+                        System.out.println("High temp: " + highTemp);
+                    }
+                    if (dataMap.getString("lowTemp") != null) {
+                        lowTemp = dataMap.getString("lowTemp");
+                        System.out.println("Low temp: " + lowTemp);
+                    }
+                    if (dataMap.getInt("weatherId") != 0) {
+                        weatherId = dataMap.getInt("weatherId");
+                        System.out.println("Weather: " + weatherId);
+                    }
                     invalidate();
+                } else {
+                    System.out.println("Couldn't parse data");
                 }
             }
         }
